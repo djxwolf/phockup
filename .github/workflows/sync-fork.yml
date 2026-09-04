@@ -1,0 +1,34 @@
+name: Sync fork with upstream
+
+# Sunday 00:00 Asia/Shanghai = Saturday 16:00 UTC
+on:
+  schedule:
+    - cron: '0 16 * * 6'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Merge upstream master into fork
+        run: |
+          git config user.name "djxwolf"
+          git config user.email "djxwolf@users.noreply.github.com"
+          git remote add upstream https://github.com/ivandokov/phockup.git
+          git fetch upstream master
+          git merge upstream/master --no-edit -m "chore: sync fork with upstream"
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/master)" ]; then
+            git push
+            echo "Fork synced with upstream."
+          else
+            echo "Already up to date. Nothing to push."
+          fi
