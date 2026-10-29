@@ -340,6 +340,16 @@ Example:
             """,
     )
 
+    parser.add_argument(
+        '--exclude-dirs',
+        type=str,
+        default=None,
+        help="""\
+            Comma-separated list of directory names to skip during traversal
+            (e.g. --exclude-dirs "@Recycle,#recycle,@Recently-Snapshot").
+            """,
+    )
+
     return parser.parse_args(args)
 
 
@@ -391,7 +401,8 @@ def main(options):
         output_prefix=options.output_prefix,
         output_suffix=options.output_suffix,
         from_date=options.from_date,
-        to_date=options.to_date
+        to_date=options.to_date,
+        exclude_dirs=options.exclude_dirs
     )
 
 

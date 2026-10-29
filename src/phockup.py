@@ -71,6 +71,9 @@ class Phockup:
         self.stop_depth = self.input_dir.count(os.sep) + self.max_depth \
             if self.max_depth > -1 else sys.maxsize
         self.file_type = args.get('file_type', None)
+        self.exclude_dirs = {
+            d.strip() for d in (args.get('exclude_dirs') or '').split(',') if d.strip()
+        }
 
         if self.dry_run:
             logger.warning("Dry-run phockup (does a trial run with no permanent changes)...")
@@ -141,6 +144,7 @@ class Phockup:
 
         # Walk the directory
         for root, dirnames, files in os.walk(self.input_dir):
+            dirnames[:] = [d for d in dirnames if d not in self.exclude_dirs]
             files.sort()
             file_paths_to_process = []
             for filename in files:
@@ -169,6 +173,8 @@ class Phockup:
             if _get_depth(root) > self.stop_depth:
                 continue
             for name in dirs:
+                if name in self.exclude_dirs:
+                    continue
                 dir_path = os.path.join(root, name)
                 if _get_depth(dir_path) > self.stop_depth:
                     continue
@@ -181,6 +187,7 @@ class Phockup:
     def get_file_count(self):
         file_count = 0
         for root, dirnames, files in os.walk(self.input_dir):
+            dirnames[:] = [d for d in dirnames if d not in self.exclude_dirs]
             file_count += len(files)
             if root.count(os.sep) >= self.stop_depth:
                 del dirnames[:]

@@ -39,6 +39,24 @@ def test_exception_if_missing_input_directory(mocker):
         Phockup('in', 'out')
 
 
+def test_exclude_dirs_parsing(tmp_path):
+    src = tmp_path / "src"
+    src.mkdir()
+    phockup = Phockup(str(src), str(tmp_path / "out"),
+                      exclude_dirs='@Recycle,#recycle, @Recently-Snapshot')
+    assert phockup.exclude_dirs == {'@Recycle', '#recycle', '@Recently-Snapshot'}
+
+
+def test_exclude_dirs_skips_directory(tmp_path):
+    src = tmp_path / "src"
+    (src / "@Recycle").mkdir(parents=True)
+    (src / "@Recycle" / "deleted.jpg").write_text("x")
+    (src / "keep").mkdir()
+    (src / "keep" / "a.jpg").write_text("x")
+    phockup = Phockup(str(src), str(tmp_path / "out"), exclude_dirs='@Recycle')
+    assert phockup.get_file_count() == 1
+
+
 def test_exception_if_input_not_directory(mocker):
     mocker.patch('os.makedirs')
     mocker.patch('sys.exit')
