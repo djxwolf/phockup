@@ -35,6 +35,22 @@ def test_get_date_from_exif_with_timezone():
            }
 
 
+def test_get_date_from_exif_timezone_without_date():
+    # A TimeZone tag without a parseable date must not crash (regression:
+    # None + timedelta). It should fall through to no date.
+    assert Date().from_exif({"TimeZone": "-07:00"}) == {
+        "date": None,
+        "subseconds": ""
+    }
+
+
+def test_get_date_from_exif_timezone_falls_back_to_filename():
+    assert Date("IMG_20170101_010101.jpg").from_exif({"TimeZone": "-07:00"}) == {
+        "date": datetime(2017, 1, 1, 1, 1, 1),
+        "subseconds": ""
+    }
+
+
 def test_get_date_from_custom_date_field():
     assert Date().from_exif({
         "CustomField": "2017:01:01 01:01:01"
